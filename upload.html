@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>PhotoStockX — Загрузить фото</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{background:#040d1a;color:#e8eef8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;min-height:100svh;}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;background:rgba(4,13,26,0.96);border-bottom:1px solid rgba(30,107,255,0.15);backdrop-filter:blur(16px);}
+.logo{font-size:18px;font-weight:700;background:linear-gradient(135deg,#fff,#0099ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-decoration:none;letter-spacing:.5px;}
+.nav-back{font-size:13px;color:#6b82a8;text-decoration:none;}
+
+.steps-bar{position:fixed;top:52px;left:0;right:0;z-index:99;height:40px;background:rgba(7,16,34,0.98);border-bottom:1px solid rgba(30,107,255,0.12);display:flex;align-items:center;justify-content:center;gap:0;}
+.sb{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:500;color:#3a5280;}
+.sb.active{color:#e8eef8;}
+.sb.done{color:#00d96a;}
+.sc{width:22px;height:22px;border-radius:50%;border:2px solid #1a2f55;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;transition:all .3s;flex-shrink:0;}
+.sb.active .sc{border-color:#1e6bff;background:rgba(30,107,255,0.2);color:#0099ff;}
+.sb.done .sc{border-color:#00d96a;background:rgba(0,217,106,0.15);color:#00d96a;}
+.sl{width:20px;height:1px;background:#1a2f55;margin:0 5px;transition:background .3s;}
+.sl.done{background:#00d96a;}
+.sb-lbl{display:none;}
+@media(min-width:360px){.sb-lbl{display:inline;}}
+
+.wrap{padding-top:92px;max-width:480px;margin:0 auto;padding-left:16px;padding-right:16px;padding-bottom:60px;}
+
+.screen{display:none;padding-top:20px;}
+.screen.on{display:block;animation:up .3s ease both;}
+@keyframes up{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+.ttl{font-size:22px;font-weight:700;margin-bottom:6px;}
+.sub{font-size:14px;color:#6b82a8;margin-bottom:20px;line-height:1.6;}
+
+/* UPLOAD */
+.dropzone{border:2px dashed rgba(30,107,255,0.3);border-radius:14px;padding:32px 16px;text-align:center;cursor:pointer;margin-bottom:12px;transition:border-color .2s,background .2s;}
+.dropzone.over{border-color:#1e6bff;background:rgba(30,107,255,0.05);}
+.dropzone input{display:none;}
+.dz-ico{font-size:32px;margin-bottom:8px;}
+.dz-ttl{font-size:16px;font-weight:600;margin-bottom:4px;}
+.dz-sub{font-size:13px;color:#6b82a8;}
+
+.counter{display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.03);border:1px solid #1a2f55;border-radius:10px;padding:10px 14px;margin-bottom:10px;font-size:13px;color:#6b82a8;}
+.cnum{font-size:18px;font-weight:700;color:#e8eef8;}
+.cbar-wrap{width:80px;height:5px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;}
+.cbar{height:100%;background:linear-gradient(90deg,#1e6bff,#0099ff);border-radius:3px;transition:width .3s;}
+
+.slots{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:16px;}
+.slot{aspect-ratio:1;background:#0e1a34;border:1px solid #1a2f55;border-radius:10px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;font-size:13px;font-weight:600;color:rgba(255,255,255,0.07);}
+.slot.has{border-color:rgba(30,107,255,0.4);}
+.slot img{width:100%;height:100%;object-fit:cover;display:block;}
+.rmv{position:absolute;top:3px;right:3px;width:18px;height:18px;background:rgba(0,0,0,.8);border:none;border-radius:50%;color:#fff;font-size:9px;cursor:pointer;display:none;align-items:center;justify-content:center;z-index:2;}
+.slot.has:active .rmv,.slot.has:hover .rmv{display:flex;}
+
+.btn{width:100%;background:linear-gradient(135deg,#1e6bff,#0099ff);color:#fff;border:none;border-radius:12px;padding:15px;font-family:inherit;font-size:16px;font-weight:600;cursor:pointer;margin-top:4px;}
+.btn:active{opacity:.9;}
+
+/* PROC */
+.proc{text-align:center;padding:20px 0;}
+.proc-ico{width:70px;height:70px;border-radius:50%;background:rgba(30,107,255,0.1);border:2px solid rgba(30,107,255,0.3);display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 14px;}
+.proc-ico.spin{animation:spin 2s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.proc-ttl{font-size:19px;font-weight:700;margin-bottom:6px;}
+.proc-sub{font-size:13px;color:#6b82a8;margin-bottom:16px;line-height:1.6;}
+.pbar-wrap{width:100%;height:7px;background:rgba(255,255,255,0.07);border-radius:4px;overflow:hidden;margin-bottom:6px;}
+.pbar{height:100%;background:linear-gradient(90deg,#1e6bff,#0099ff);border-radius:4px;transition:width .25s linear;}
+.ppct{font-size:16px;font-weight:600;color:#0099ff;margin-bottom:14px;}
+
+.bcard{background:#111f3d;border:1px solid #1a2f55;border-radius:13px;padding:15px;margin-top:12px;text-align:left;animation:up .4s ease both;}
+.bcard.green{border-color:rgba(0,217,106,0.35);background:rgba(0,217,106,0.06);}
+.bc-lbl{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#6b82a8;margin-bottom:7px;}
+.bc-lbl.g{color:#00d96a;}
+.bc-name{font-size:17px;font-weight:700;margin-bottom:3px;}
+.bc-sub{font-size:13px;color:#6b82a8;}
+.bc-price{font-size:20px;font-weight:700;color:#00d96a;margin-top:4px;}
+
+.offer-box{background:#111f3d;border:1px solid rgba(30,107,255,0.25);border-radius:16px;padding:20px 16px;margin-top:18px;text-align:center;}
+.offer-amt{font-size:48px;font-weight:700;color:#00d96a;line-height:1;margin-bottom:5px;}
+.offer-lbl{font-size:12px;color:#6b82a8;margin-bottom:3px;}
+.offer-buyer{font-size:14px;color:#e8eef8;margin-bottom:16px;}
+.offer-buyer span{color:#0099ff;font-weight:600;}
+.btn-accept{width:100%;background:linear-gradient(135deg,#00d96a,#00cc66);color:#fff;border:none;border-radius:12px;padding:15px;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:8px;}
+.btn-accept:active{opacity:.9;}
+.btn-decline{width:100%;background:rgba(255,255,255,0.04);border:1px solid #1a2f55;color:#6b82a8;border-radius:12px;padding:13px;font-family:inherit;font-size:14px;cursor:pointer;}
+
+.searching{text-align:center;padding:32px 0;}
+.spinner{width:50px;height:50px;border:3px solid rgba(30,107,255,0.2);border-top:3px solid #0099ff;border-radius:50%;margin:0 auto 14px;animation:spin 1s linear infinite;}
+.srch-ttl{font-size:17px;font-weight:700;margin-bottom:5px;}
+.srch-sub{font-size:13px;color:#6b82a8;}
+
+.done-wrap{text-align:center;padding:28px 0;}
+.done-ico{width:80px;height:80px;background:rgba(0,217,106,0.12);border:2px solid rgba(0,217,106,0.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:34px;margin:0 auto 16px;animation:pop .5s cubic-bezier(.34,1.4,.64,1) both;}
+@keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
+.done-ttl{font-size:22px;font-weight:700;margin-bottom:6px;}
+.done-sub{font-size:14px;color:#6b82a8;margin-bottom:22px;line-height:1.6;}
+.btn-cab{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:linear-gradient(135deg,#1e6bff,#0099ff);color:#fff;font-family:inherit;font-size:16px;font-weight:600;padding:15px;border-radius:12px;border:none;cursor:pointer;text-decoration:none;}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">PhotoStockX</a>
+  <a href="index.html" class="nav-back">← Главная</a>
+</nav>
+
+<div class="steps-bar">
+  <div class="sb active" id="s1"><div class="sc" id="sc1">1</div><span class="sb-lbl"> Фото</span></div>
+  <div class="sl" id="l1"></div>
+  <div class="sb" id="s2"><div class="sc" id="sc2">2</div><span class="sb-lbl"> Обработка</span></div>
+  <div class="sl" id="l2"></div>
+  <div class="sb" id="s3"><div class="sc" id="sc3">3</div><span class="sb-lbl"> Готово</span></div>
+</div>
+
+<div class="wrap">
+
+<!-- S1: UPLOAD -->
+<div class="screen on" id="screen1">
+  <div class="ttl">Загрузи фото</div>
+  <div class="sub">До 10 фото · от 200 до 10 000 ₽ за снимок</div>
+
+  <div class="dropzone" id="dz" onclick="document.getElementById('fi').click()">
+    <input type="file" id="fi" multiple accept="image/*">
+    <div class="dz-ico">📷</div>
+    <div class="dz-ttl">Нажми чтобы выбрать</div>
+    <div class="dz-sub">JPG, PNG, RAW — до 100 МБ</div>
+  </div>
+
+  <div class="counter">
+    <div style="display:flex;align-items:center;gap:8px;color:#6b82a8">Загружено: <span class="cnum" id="cnum">0</span> <span>/ 10</span></div>
+    <div class="cbar-wrap"><div class="cbar" id="cbar" style="width:0%"></div></div>
+  </div>
+
+  <div class="slots" id="slots"></div>
+
+  <button class="btn" onclick="upload()">Отправить на модерацию →</button>
+</div>
+
+<!-- S2: PROC -->
+<div class="screen" id="screen2">
+  <div id="proc"></div>
+</div>
+
+<!-- S3: DONE -->
+<div class="screen" id="screen3">
+  <div class="done-wrap">
+    <div class="done-ico">✅</div>
+    <div class="done-ttl">Сделка оформлена!</div>
+    <div class="done-sub" id="done-sub">Деньги зачислены на ваш баланс.</div>
+    <a href="cabinet.html" class="btn-cab">👤 Личный кабинет</a>
+  </div>
+</div>
+
+</div>
+
+<script>
+const buyers=['Александр Петров','Мария Сидорова','Дмитрий Козлов','Ольга Новикова','Иван Морозов','Наталья Волкова','Сергей Лебедев','Анна Соколова','Павел Попов','Екатерина Носова','Роман Борисов','Юлия Давыдова','Артём Фёдоров','Светлана Кузьмина','Виктор Орлов','Татьяна Васильева','Андрей Захаров','Елена Макарова','Николай Соловьёв','Ирина Тихонова','Максим Кириллов','Людмила Фролова','Алексей Голубев','Вероника Ильина','Константин Белов','Дарья Семёнова','Евгений Виноградов','Оксана Трофимова','Михаил Куликов','Алина Гусева','Антон Зайцев','Валерия Пономарёва','Илья Чернов','Марина Власова','Денис Медведев','Кристина Щербакова','Олег Блинов','Яна Колесникова','Тимур Наумов','Полина Громова','Владимир Судаков','Надежда Крылова','Георгий Степанов','Ксения Журавлёва','Руслан Данилов','Валентина Сергеева','Даниил Комаров','Игорь Пахомов','Диана Афанасьева','Станислав Мельников'];
+
+function pick(a){return a[Math.floor(Math.random()*a.length)];}
+function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+
+// Generate or restore random username
+function getOrCreateNick(){
+  let nick = sessionStorage.getItem('psx_nick');
+  if(!nick){
+    nick = 'photographer' + rnd(100000,999999);
+    sessionStorage.setItem('psx_nick', nick);
+  }
+  return nick;
+}
+getOrCreateNick();
+
+let step=1, files=[], timers=[];
+
+function go(n){
+  document.getElementById('screen'+step).classList.remove('on');
+  step=n;
+  document.getElementById('screen'+step).classList.add('on');
+  prog();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function prog(){
+  for(let i=1;i<=3;i++){
+    const el=document.getElementById('s'+i), sc=document.getElementById('sc'+i);
+    el.classList.remove('active','done');
+    if(i<step){el.classList.add('done');sc.textContent='✓';}
+    else if(i===step){el.classList.add('active');sc.textContent=i;}
+    else sc.textContent=i;
+  }
+  for(let i=1;i<=2;i++) document.getElementById('l'+i).classList.toggle('done',i<step);
+}
+
+function buildSlots(){
+  const s=document.getElementById('slots');
+  s.innerHTML='';
+  for(let i=0;i<10;i++){
+    const d=document.createElement('div');
+    d.className='slot'+(files[i]?' has':'');
+    if(files[i]){
+      const img=document.createElement('img'); img.src=URL.createObjectURL(files[i]);
+      const btn=document.createElement('button'); btn.className='rmv'; btn.innerHTML='✕';
+      btn.onclick=e=>{e.stopPropagation(); files.splice(i,1); buildSlots();};
+      d.appendChild(img); d.appendChild(btn);
+    } else {
+      d.textContent=i+1;
+    }
+    s.appendChild(d);
+  }
+  document.getElementById('cnum').textContent=files.length;
+  document.getElementById('cbar').style.width=(files.length/10*100)+'%';
+}
+
+document.getElementById('fi').addEventListener('change',e=>{
+  files=files.concat(Array.from(e.target.files).slice(0,10-files.length));
+  buildSlots(); e.target.value='';
+});
+
+const dz=document.getElementById('dz');
+['dragenter','dragover'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add('over');}));
+['dragleave','drop'].forEach(ev=>dz.addEventListener(ev,e=>{
+  e.preventDefault(); dz.classList.remove('over');
+  if(ev==='drop'){
+    files=files.concat(Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/')).slice(0,10-files.length));
+    buildSlots();
+  }
+}));
+
+function upload(){
+  if(!files.length){dz.style.borderColor='#ff4d4d';setTimeout(()=>dz.style.borderColor='',1500);return;}
+  go(2);
+  startProc();
+}
+
+function clr(){timers.forEach(clearTimeout);timers=[];}
+
+function startProc(){
+  clr();
+  const b1=pick(buyers), b2=pick(buyers);
+  const total=rnd(1000,5000);
+
+  show({ico:'⚙️',spin:true,ttl:'Проверяем ваши фото...',sub:'',pct:0});
+
+  // Phase 1: 0→50% over first 3s
+  let p=0;
+  const iv1=setInterval(()=>{p+=1;upd(p);if(p>=50)clearInterval(iv1);},60);
+
+  // At 3s — buyer interest, progress 50→80%
+  timers.push(setTimeout(()=>{
+    show({ico:'👀',spin:false,ttl:'Ваше фото нравится!',sub:'',pct:50,buyer:b1,blbl:'👀 Заинтересован',bsub:'Рассматривает ваши фотографии...',bgreen:false});
+    let p2=50; const iv2=setInterval(()=>{p2+=1;upd(p2);if(p2>=80)clearInterval(iv2);},67); timers.push(iv2);
+  },3000));
+
+  // At 6s — buyer found, progress 80→100%
+  timers.push(setTimeout(()=>{
+    show({ico:'🎯',spin:false,ttl:'Покупатель найден!',sub:'',pct:80,buyer:b2,blbl:'✅ Покупатель найден',bsub:'Подтверждаем сделку...',bgreen:true,bprice:total});
+    let p3=80; const iv3=setInterval(()=>{p3+=2;upd(p3);if(p3>=100)clearInterval(iv3);},100); timers.push(iv3);
+  },6000));
+
+  // At 8s (6s + 2s wait) — show offer
+  timers.push(setTimeout(()=>showOffer(b2,total),8000));
+}
+
+function upd(p){
+  const b=document.getElementById('pb'), pe=document.getElementById('ppe');
+  if(b)b.style.width=p+'%'; if(pe)pe.textContent=p+'%';
+}
+
+function show({ico,spin,ttl,sub,pct,buyer,blbl,bsub,bgreen,bprice}){
+  let bh='';
+  if(buyer) bh=`<div class="bcard${bgreen?' green':''}"><div class="bc-lbl${bgreen?' g':''}">${blbl}</div><div class="bc-name">${buyer}</div><div class="bc-sub">${bsub}</div>${bgreen&&bprice?`<div class="bc-price">+${bprice.toLocaleString('ru-RU')} ₽</div>`:''}</div>`;
+  document.getElementById('proc').innerHTML=`<div class="proc"><div class="proc-ico${spin?' spin':''}">${ico}</div><div class="proc-ttl">${ttl}</div><div class="proc-sub">${sub}</div><div class="pbar-wrap"><div class="pbar" id="pb" style="width:${pct}%"></div></div><div class="ppct" id="ppe">${pct}%</div>${bh}</div>`;
+}
+
+function showOffer(buyer,total){
+  document.getElementById('proc').innerHTML=`<div class="proc"><div class="proc-ico">💼</div><div class="proc-ttl">Предложение</div><div class="proc-sub">Принять или найти другого?</div><div class="offer-box"><div class="offer-amt">${total.toLocaleString('ru-RU')} ₽</div><div class="offer-lbl">полная стоимость покупки</div><div class="offer-buyer">Покупатель: <span>${buyer}</span></div><button class="btn-accept" onclick="accept(${total},'${buyer.replace(/'/g,"\\'")}')">✅ Принять</button><button class="btn-decline" onclick="decline()">🔄 Найти другого</button></div></div>`;
+}
+
+function accept(total,buyer){
+  const prev=parseInt(sessionStorage.getItem('psx_balance')||'0');
+  const sales=parseInt(sessionStorage.getItem('psx_sales')||'0');
+  sessionStorage.setItem('psx_balance', prev+total);
+  sessionStorage.setItem('psx_sales', sales+1);
+  document.getElementById('done-sub').textContent=`${total.toLocaleString('ru-RU')} ₽ зачислено на ваш баланс.`;
+  go(3);
+}
+
+function decline(){
+  clr();
+  document.getElementById('proc').innerHTML=`<div class="searching"><div class="spinner"></div><div class="srch-ttl">Ищем нового покупателя...</div><div class="srch-sub">Подбираем лучшее предложение</div></div>`;
+  const nb=pick(buyers), nt=rnd(1000,5000);
+
+  // At 3s — show interest
+  timers.push(setTimeout(()=>{
+    show({ico:'👀',spin:false,ttl:'Ваше фото нравится!',sub:'',pct:50,buyer:pick(buyers),blbl:'👀 Заинтересован',bsub:'Рассматривает ваши фотографии...',bgreen:false});
+    let p=50; const iv=setInterval(()=>{p+=1;upd(p);if(p>=80)clearInterval(iv);},67); timers.push(iv);
+  },3000));
+
+  // At 6s — buyer found, progress to 100%
+  timers.push(setTimeout(()=>{
+    show({ico:'🎯',spin:false,ttl:'Покупатель найден!',sub:'',pct:80,buyer:nb,blbl:'✅ Покупатель найден',bsub:'Подтверждаем сделку...',bgreen:true,bprice:nt});
+    let p=80; const iv=setInterval(()=>{p+=2;upd(p);if(p>=100)clearInterval(iv);},100); timers.push(iv);
+  },6000));
+
+  // At 8s — show offer
+  timers.push(setTimeout(()=>showOffer(nb,nt),8000));
+}
+
+buildSlots();
+prog();
+</script>
+</body>
+</html>
