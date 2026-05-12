@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>StockSell</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{background:#040d1a;color:#e8eef8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;overflow-x:hidden;}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;background:rgba(4,13,26,0.96);border-bottom:1px solid rgba(30,107,255,0.15);backdrop-filter:blur(16px);}
+.logo{font-size:18px;font-weight:700;background:linear-gradient(135deg,#fff,#0099ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-decoration:none;letter-spacing:.5px;}
+
+.ticker-bar{position:fixed;top:52px;left:0;right:0;z-index:99;height:32px;background:rgba(7,16,34,0.98);border-bottom:1px solid rgba(30,107,255,0.12);display:flex;align-items:center;overflow:hidden;}
+.ticker-live{display:flex;align-items:center;gap:6px;padding:0 14px;border-right:1px solid rgba(30,107,255,0.2);height:100%;flex-shrink:0;font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#0099ff;white-space:nowrap;}
+.dot{width:6px;height:6px;border-radius:50%;background:#00ff88;box-shadow:0 0 6px #00ff88;animation:blink 1.4s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+.ticker-wrap{flex:1;overflow:hidden;}
+.ticker-track{display:flex;align-items:center;width:max-content;animation:tick 200s linear infinite;}
+@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.ticker-item{padding:0 28px;font-size:12px;white-space:nowrap;border-right:1px solid rgba(255,255,255,0.04);height:32px;display:flex;align-items:center;gap:6px;color:#6b82a8;}
+.ticker-item b{color:#0099ff;font-weight:600;}
+.rub{background:rgba(0,200,100,0.14);color:#00d96a;font-weight:600;padding:1px 7px;border-radius:4px;font-size:11px;}
+
+.hero{min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:100px 24px 48px;position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;top:-10%;left:50%;transform:translateX(-50%);width:140vw;height:80vh;background:radial-gradient(ellipse,rgba(30,107,255,0.12) 0%,transparent 65%);pointer-events:none;}
+
+.hero h1{font-size:clamp(32px,9vw,60px);font-weight:700;line-height:1.1;letter-spacing:-.5px;margin-bottom:14px;position:relative;}
+.hero h1 span{background:linear-gradient(90deg,#1e6bff,#0099ff,#00d4ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero p{font-size:16px;color:#6b82a8;margin-bottom:28px;line-height:1.65;max-width:340px;position:relative;}
+
+.cta{display:flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,#1e6bff,#0099ff);color:#fff;font-size:16px;font-weight:600;padding:16px 36px;border-radius:14px;text-decoration:none;box-shadow:0 6px 28px rgba(30,107,255,0.4);width:100%;max-width:340px;position:relative;}
+.cta:active{opacity:.9;}
+
+.hint{margin-top:14px;font-size:12px;color:#3a5280;position:relative;}
+.hint b{color:#00d96a;}
+
+.stats{display:flex;justify-content:center;gap:36px;margin-top:44px;flex-wrap:wrap;position:relative;}
+.stat{text-align:center;}
+.stat-n{font-size:22px;font-weight:700;color:#e8eef8;}
+.stat-l{font-size:11px;color:#3a5280;margin-top:2px;}
+
+.footer{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 0 16px;}
+.footer-row{display:flex;align-items:center;gap:6px;}
+.footer-disc{font-size:10px;color:rgba(107,130,168,0.3);letter-spacing:.2px;}
+
+.sales-section{width:100%;max-width:380px;margin-top:28px;text-align:left;position:relative;}
+.r-ttl{font-size:15px;font-weight:600;margin-bottom:10px;}
+.r-list{display:flex;flex-direction:column;gap:8px;}
+.ri{background:#111f3d;border:1px solid #1a2f55;border-radius:12px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;animation:slideIn .35s ease both;}
+@keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.ri-l{display:flex;flex-direction:column;gap:2px;}
+.ri-user{font-size:14px;font-weight:600;color:#e8eef8;}
+.ri-buyer{font-size:12px;color:#6b82a8;}
+.ri-price{font-size:15px;font-weight:700;color:#00d96a;white-space:nowrap;}
+.footer-text{font-size:11px;color:rgba(107,130,168,0.45);letter-spacing:.3px;}
+.footer-info{width:14px;height:14px;border-radius:50%;border:1px solid rgba(107,130,168,0.25);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:rgba(107,130,168,0.35);cursor:pointer;line-height:1;flex-shrink:0;}
+.footer-info:active{opacity:.6;}
+
+.overlay{position:fixed;inset:0;z-index:200;background:rgba(4,13,26,0.88);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:24px;}
+.overlay.open{display:flex;}
+.modal{background:#111f3d;border:1px solid #1a2f55;border-radius:18px;padding:28px 22px 22px;width:100%;max-width:380px;position:relative;animation:popIn .25s cubic-bezier(.34,1.1,.64,1) both;}
+@keyframes popIn{from{transform:scale(.93);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-close{position:absolute;top:14px;right:14px;width:30px;height:30px;background:rgba(255,255,255,0.07);border:none;border-radius:50%;color:#6b82a8;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.modal-close:active{opacity:.7;}
+.modal-title{font-size:17px;font-weight:700;margin-bottom:12px;padding-right:32px;}
+.modal-text{font-size:14px;color:#6b82a8;line-height:1.7;}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">StockSell</a>
+</nav>
+
+<div class="ticker-bar">
+  <div class="ticker-live"><div class="dot"></div>LIVE</div>
+  <div class="ticker-wrap"><div class="ticker-track" id="track"></div></div>
+</div>
+
+<div class="hero">
+  <h1>Загружай фото —<br><span>узнай стоимость</span></h1>
+  <p>Загружай фото лета, природы, отдыха, питомцев!</p>
+  <a id="ctaBtn" href="upload.html" class="cta">📤 Загрузить фото</a>
+  <div class="hint">Одно фото от <b>200 до 10 000 ₽</b></div>
+  <div class="stats">
+    <div class="stat"><div class="stat-n">12 000+</div><div class="stat-l">Авторов</div></div>
+    <div class="stat"><div class="stat-n">более 15 млн ₽</div><div class="stat-l">Оценено</div></div>
+  </div>
+
+
+  <!-- <div class="sales-section">
+    <div class="r-ttl">Последние оценки</div>
+    <div class="r-list" id="rList"></div>
+  </div> -->
+</div>
+
+<div class="footer">
+  <div class="footer-row">
+    <span class="footer-text">StockSell — о сервисе</span>
+    <span class="footer-info" onclick="openModal()">!</span>
+  </div>
+  <span class="footer-disc">Владелец сайта не несет ответственности за загружаемый контент.</span>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeIfOutside(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title">Конфиденциальность</div>
+    <div class="modal-text">
+      Загруженные фотографии используются только для оценки и не сохраняются после обработки. Мы не храним персональные данные и не передаем их третьим лицам. На сайте не осуществляется покупка и продажа фотографий.
+    </div>
+  </div>
+</div>
+
+<script>
+function openModal(){document.getElementById('overlay').classList.add('open');document.body.style.overflow='hidden';}
+function closeModal(){document.getElementById('overlay').classList.remove('open');document.body.style.overflow='';}
+function closeIfOutside(e){if(e.target===document.getElementById('overlay'))closeModal();}
+</script>
+
+<script>
+// If already registered — button goes to cabinet
+if(sessionStorage.getItem('psx_nick')){
+  document.getElementById('ctaBtn').href = 'cabinet.html';
+}
+
+const B=['Александр П.','Мария С.','Дмитрий К.','Ольга Н.','Иван М.','Наталья В.','Сергей Л.','Анна С.','Павел П.','Екатерина Н.','Роман Б.','Юлия Д.','Артём Ф.','Светлана К.','Виктор О.','Андрей З.','Елена М.','Максим К.','Алексей Г.','Вероника И.','Константин Б.','Дарья С.','Евгений В.','Михаил К.','Антон З.','Илья Ч.','Марина В.','Денис М.','Олег Б.','Тимур Н.','Полина Г.','Надежда К.','Руслан Д.','Даниил К.','Игорь П.','Диана А.'];
+const S=['@AlexPhoto','@NaturaShot','@UrbanLens','@SkyFrame','@NightOwl','@CityEye','@GoldenHour','@VolgaShot','@BaikalLens','@FlashPoint','@SunsetPro','@WildLens','@PixelDream','@NordPhoto','@PrimorPhoto','@MoscowEye','@PiterFrame','@SamaraArt','@RostovPic','@IrkutskFrame'];
+const E=['🌅','🏙️','🌊','🦋','🍃','🏔️','🌺','🦅','🌆','🌸'];
+function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function pick(a){return a[Math.floor(Math.random()*a.length)];}
+const t=document.getElementById('track');
+let h='';
+for(let i=0;i<36;i++){
+  const p=rnd(200,10000);
+  h+=`<div class="ticker-item">${pick(E)} <b>${pick(S)}</b>  <span class="rub">${p.toLocaleString('ru-RU')} ₽</span></div>`;
+}
+t.innerHTML=h+h;
+
+// Sales list
+const list=document.getElementById('rList');
+for(let i=0;i<5;i++) addSale(pick(S),pick(B),rnd(200,8000),false);
+function scheduleNext(){setTimeout(()=>{addSale(pick(S),pick(B),rnd(200,8000),true);scheduleNext();},rnd(3000,6000));}
+scheduleNext();
+function addSale(seller,buyer,price,animate){
+  const item=document.createElement('div');item.className='ri';
+  if(!animate)item.style.animation='none';
+  item.innerHTML=`<div class="ri-l"><div class="ri-user">${seller}</div><div class="ri-buyer">Оценщик: ${buyer}</div></div><div class="ri-price">+${price.toLocaleString('ru-RU')} ₽</div>`;
+  list.insertBefore(item,list.firstChild);
+  while(list.children.length>5)list.removeChild(list.lastChild);
+}
+</script>
+</body>
+</html>
